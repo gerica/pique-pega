@@ -7,6 +7,8 @@ class PiqueComponent {
   final PiquePegaGame game;
   List<SpritsRect> _listSpritsRect;
 
+  List<SpritsRect> get listSpritsRect => _listSpritsRect;
+
   PiqueComponent(this.game) {
     _listSpritsRect = List();
 

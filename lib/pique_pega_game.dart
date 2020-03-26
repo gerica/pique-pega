@@ -57,6 +57,15 @@ class PiquePegaGame extends Game {
   }
 
   void onTapDown(TapDownDetails d) {
+    Rect tapRect = Rect.fromLTWH(d.globalPosition.dx, d.globalPosition.dy, tileSize, tileSize);
+    bool tapPique = false;
+    for (SpritsRect spritsRect in _piqueComponent.listSpritsRect) {
+      tapPique = spritsRect.bgRects.overlaps(tapRect);
+      if (tapPique) {
+        break;
+      }
+    }
+    _playerSprit.tapPique = tapPique;
     _playerSprit.targetLocation = d.globalPosition;
     playerSelected = _playerSprit;
   }

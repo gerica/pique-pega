@@ -9,22 +9,20 @@ class PegaSprit {
   final PiquePegaGame game;
   List<Sprite> _sprites;
   double _spriteIndex = 0;
-  Rect bgRect;
+  Rect _bgRect;
   double get speed => game.tileSize * 2;
   Offset targetLocation;
   MoviesDirection _moviesDirection;
 
   PegaSprit(this.game) {
-    setTargetLocation();
-    bgRect = Rect.fromLTWH(game.screenSize.width / 2, game.screenSize.height / 2, game.tileSize, game.tileSize);
-//    bgPaint = Paint();
-//    bgPaint.color = Color(0xffee3000);
+    _bgRect = Rect.fromLTWH(game.screenSize.width / 2, game.screenSize.height / 2, game.tileSize, game.tileSize);
     _sprites = List();
+    setTargetLocation();
     PlayersSpritsConst.getAllBettyMoves().forEach((f) => _sprites.add(Sprite(f)));
   }
 
   void render(Canvas canvas) {
-    _sprites[_spriteIndex.toInt()].renderRect(canvas, bgRect.inflate(2));
+    _sprites[_spriteIndex.toInt()].renderRect(canvas, _bgRect.inflate(2));
   }
 
   void update(double t, PlayerSprit player) {
@@ -39,10 +37,16 @@ class PegaSprit {
 
   void _catchPlayer(double t, PlayerSprit player) {
     double stepDistance = speed * t * 1.5;
-    Offset toTarget = player.bgRect.bottomRight - Offset(bgRect.left, bgRect.top);
+    bool encontrou = player.bgRect.overlaps(_bgRect);
+    if (encontrou != null) {
+      print('---> $encontrou');
+    }
+
+    Offset toTarget = player.bgRect.center - _bgRect.center;
+
     if (stepDistance < toTarget.distance) {
       Offset stepToTarget = Offset.fromDirection(toTarget.direction, stepDistance);
-      bgRect = bgRect.shift(stepToTarget);
+      _bgRect = _bgRect.shift(stepToTarget);
     } else {
 //      print('encontrou');
     }
@@ -50,12 +54,12 @@ class PegaSprit {
 
   void _moveRandom(double t) {
     double stepDistance = speed * t;
-    Offset toTarget = targetLocation - Offset(bgRect.left, bgRect.top);
+    Offset toTarget = targetLocation - Offset(_bgRect.left, _bgRect.top);
     if (stepDistance < toTarget.distance) {
       Offset stepToTarget = Offset.fromDirection(toTarget.direction, stepDistance);
-      bgRect = bgRect.shift(stepToTarget);
+      _bgRect = _bgRect.shift(stepToTarget);
     } else {
-      bgRect = bgRect.shift(toTarget);
+      _bgRect = _bgRect.shift(toTarget);
       setTargetLocation();
     }
   }
@@ -84,9 +88,30 @@ class PegaSprit {
     }
   }
 
+  void _setDirection(Offset value) {
+    if (_bgRect != null) {
+      int diffY = (_bgRect.center.dy - value.dy).toInt();
+      int diffX = (_bgRect.center.dx - value.dx).toInt();
+
+      if (diffY >= -80 && diffY <= 80) {
+        if (diffX < 0) {
+          _moviesDirection = MoviesDirection.rigth;
+        } else {
+          _moviesDirection = MoviesDirection.left;
+        }
+      } else {
+        if (diffY >= 0) {
+          _moviesDirection = MoviesDirection.up;
+        } else {
+          _moviesDirection = MoviesDirection.down;
+        }
+      }
+    }
+  }
+
   void setTargetLocation() {
-//    double x = game.rnd.nextDouble() * (game.screenSize.width - (game.tileSize * 2.025));
-//    double y = game.rnd.nextDouble() * (game.screenSize.height - (game.tileSize * 2.025));
+    double x = game.rnd.nextDouble() * (game.screenSize.width - (game.tileSize * 2.025));
+    double y = game.rnd.nextDouble() * (game.screenSize.height - (game.tileSize * 2.025));
 //    double initPositionX = targetLocation == null ? game.screenSize.width / 2 : targetLocation.dx;
 //    double initPositionY = targetLocation == null ? game.screenSize.height / 2 : targetLocation.dy;
 
@@ -103,6 +128,8 @@ class PegaSprit {
 //    } else {
 //      _moviesDirection = MoviesDirection.rigth;
 //    }
-    targetLocation = Offset(game.screenSize.width / 2, game.screenSize.height / 2);
+    targetLocation = Offset(x, y);
+    _setDirection(targetLocation);
+//    targetLocation = Offset(game.screenSize.width / 2, game.screenSize.height / 2);
   }
 }

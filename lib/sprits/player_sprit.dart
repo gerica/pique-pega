@@ -1,6 +1,6 @@
 import 'dart:ui';
+
 import 'package:flame/sprite.dart';
-import 'package:piquepega/components/pique_component.dart';
 import 'package:piquepega/pique_pega_game.dart';
 import 'package:piquepega/utils/name_sprits.dart';
 
@@ -13,6 +13,12 @@ class PlayerSprit {
   Rect _bgRect;
   Offset _targetLocation;
   MoviesDirection _moviesDirection = MoviesDirection.down;
+
+  bool _tapPique;
+
+  set tapPique(bool value) {
+    _tapPique = value;
+  }
 
   PlayerSprit(this.game) {
     if (game.piqueComponent == null) {
@@ -41,10 +47,12 @@ class PlayerSprit {
       if (stepDistance < toTarget.distance) {
         Offset stepToTarget = Offset.fromDirection(toTarget.direction, stepDistance);
         _bgRect = _bgRect.shift(stepToTarget);
-        _setDirection(stepToTarget);
+//        _setDirection(_targetLocation);
       } else {
         _targetLocation = null;
-        game.playerSelected = null;
+        if (_tapPique) {
+          game.playerSelected = null;
+        }
       }
     }
     _directMove(t);
@@ -79,35 +87,27 @@ class PlayerSprit {
   }
 
   void _setDirection(Offset value) {
-//    print(value);
-//    print(_targetLocation);
-//    double initPositionX = _targetLocation == null ? game.screenSize.width / 2 : _targetLocation.dx;
-//    double initPositionY = _targetLocation == null ? game.screenSize.height / 2 : _targetLocation.dy;
+    int diffY = (_bgRect.center.dy - value.dy).toInt();
+    int diffX = (_bgRect.center.dx - value.dx).toInt();
 
-//    print('antigo y: $initPositionY, novo y: ${value.dy}');
-//    print('init position x: $initPositionX, next positon x: ${value.dx}');
-
-    int diffY = (value.dy).toInt();
-    int diffX = (value.dx).toInt();
-    print(diffX);
-//    print(diffY >= -60 && diffY <= 60);
-    if (diffY >= -2 && diffY <= 2) {
-      if (diffX > 0) {
+    if (diffY >= -80 && diffY <= 80) {
+      if (diffX < 0) {
         _moviesDirection = MoviesDirection.rigth;
       } else {
         _moviesDirection = MoviesDirection.left;
       }
     } else {
-      if (value.dy >= 0) {
-        _moviesDirection = MoviesDirection.down;
-      } else {
+      if (diffY >= 0) {
         _moviesDirection = MoviesDirection.up;
+      } else {
+        _moviesDirection = MoviesDirection.down;
       }
     }
   }
 
   set targetLocation(Offset value) {
     _targetLocation = value;
+    _setDirection(value);
   }
 
   double get speed => game.tileSize * 2;
